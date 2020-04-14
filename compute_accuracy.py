@@ -79,8 +79,8 @@ for i in range(len(human_files)):
             classes_stats[k[2]] ={'false_positives':0,'true_positives':0,"count":0}
 
     for l in machine_times:
-        if (k[2] not in classes_stats.keys()):
-            classes_stats[k[2]] ={'false_positives':0,'true_positives':0,"count":0}
+        if (l[2] not in classes_stats.keys()):
+            classes_stats[l[2]] ={'false_positives':0,'true_positives':0,"count":0}
         
     for k in human_times:
         for l in machine_times:
