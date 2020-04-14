@@ -46,25 +46,35 @@ machine_directory = "prediction"
 human_files = []
 machine_files =[]
 
+
 for file in os.listdir(human_directory):
     if file.endswith(".txt"):
-        human_files.append(os.path.join(human_directory,file))
+        human_files.append(file)
 
 for file in os.listdir(machine_directory):
     if file.endswith(".txt"):
-        machine_files.append(os.path.join(machine_directory,file))
+        machine_files.append(file)
 
 human_files.sort()
 machine_files.sort()
+
+if (human_files != machine_files):
+    print("Incorrect input directories. Files must have the same name")
+    sys.exit()
+
+
+for i in range(len(human_files)):
+    human_files[i] = os.path.join(human_directory,human_files[i])
+    machine_files[i] = os.path.join(machine_directory,machine_files[i])
+
+
 
 classes_stats ={}
 human_times = []
 machine_times = []
 
 
-if (len(human_files) != len(machine_files)):
-    print("Incorrect input directories")
-    sys.exit()
+
 
 for i in range(len(human_files)):
     human_times.clear()
