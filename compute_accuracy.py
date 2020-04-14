@@ -38,9 +38,11 @@ parser.add_argument('human_directory',metavar='human_labels_directory', \
 parser.add_argument('machine_directory',metavar='machine_labels_directory', \
                     type=str,help="Directory with the classifier labels")
 
-args = parser.parse_args()
-human_directory = args.human_directory
-machine_directory = args.machine_directory
+#args = parser.parse_args()
+#human_directory = args.human_directory
+#machine_directory = args.machine_directory
+human_directory = "label"
+machine_directory = "prediction"
 human_files = []
 machine_files =[]
 
@@ -58,6 +60,7 @@ machine_files.sort()
 classes_stats ={}
 human_times = []
 machine_times = []
+
 
 if (len(human_files) != len(machine_files)):
     print("Incorrect input directories")
@@ -101,19 +104,37 @@ for i in range(len(human_files)):
     
 total_n = 0
 total_tp = 0
+total_fp = 0
+
 for k in classes_stats:
     tp = classes_stats[k]["true_positives"]
     fp = classes_stats[k]["false_positives"]
     cnt = classes_stats[k]["count"]
     total_n = total_n+cnt
     total_tp = total_tp+tp
-
+    total_fp = total_fp+fp
     print ("Class: "+k)
     print ("    Number of cases: "+str(cnt))
     print ("    True positives: "+str(tp))
     print ("    False positives: "+str(fp))
-    print ("    True positive rate: "+ str(float(tp/cnt)))
+    if (cnt != 0):
+        print ("    True positive rate: "+ str(float(tp/cnt)))
+    else:
+        print ("    True positive rate: does not exist. There is no fragment with this label in the file. Only false positives")
     print("")
 
-print("General Accuracy: "+str(float(total_tp/total_n)))
+print("Accuracy(including all the classes): "+str(float(total_tp/total_n)))
+print("Total number of false positives(in absolute terms): "+str(total_fp))
+print ("")
+caut_message = '''
+************************************************************************
+Take into account that the Total number of False Positives number is in absolute value,
+which means that if the classifier labels a few seconds incorrectly,
+if the predicted labels refer to small window sizes, the False positive number 
+will be big (even if the classifier works good). If the windows overlap, then the False Positives number
+ will be even bigger. A better analysis of the false positives will be added to this script if time allows.
+
+************************************************************************ 
+'''
+print(caut_message)
 print("")
