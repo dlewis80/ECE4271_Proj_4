@@ -1,5 +1,0 @@
-1	4.6	noise
-10.12	11.20	bird
-92	120	talking
-129.2	160	bird
-400.1	405.89	noise
