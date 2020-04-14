@@ -68,14 +68,10 @@ for i in range(len(human_files)):
     machine_times.clear()
     with open(human_files[i]) as fh, open(machine_files[i]) as fm:
         for line in fh:
-            line = line.replace(" ","\t")
-            line = line.replace("    ","\t")
-            tokens = line.split("\t")
+            tokens = line.split()
             human_times.append([float(tokens[0]), float(tokens[1]), tokens[2].rstrip(),False])
         for line in fm:
-            line = line.replace(" ","\t")
-            line = line.replace("    ","\t")
-            tokens = line.split("\t")
+            tokens = line.split()
             machine_times.append([float(tokens[0]), float(tokens[1]), tokens[2].rstrip(),False])
     
     for k in human_times:
