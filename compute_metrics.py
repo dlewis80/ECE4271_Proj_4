@@ -72,6 +72,7 @@ for i in range(len(human_files)):
 classes_stats ={}
 human_times = []
 machine_times = []
+falsep_stats={}
 
 
 
@@ -128,12 +129,12 @@ for k in classes_stats:
     print ("    True positives: "+str(tp))
     print ("    False positives: "+str(fp))
     if (cnt != 0):
-        print ("    True positive rate: "+ str(float(tp/cnt)))
+        print ("    TPR: "+ str(float(tp/cnt)))
     else:
-        print ("    True positive rate: does not exist. There is no fragment with this label in the file. Only false positives")
+        print ("    TPR: does not exist. There is no fragment with this label in the file. Only false positives")
     print("")
 
-print("Accuracy(including all the classes): "+str(float(total_tp/total_n)))
+print("TPR(including all the classes): "+str(float(total_tp/total_n)))
 print("Total number of false positives(in absolute terms): "+str(total_fp))
 print ("")
 caut_message = '''
@@ -143,6 +144,8 @@ which means that if the classifier labels a few seconds incorrectly,
 if the predicted labels refer to small window sizes, the False positive number 
 will be big (even if the classifier works good). If the windows overlap, then the False Positives number
  will be even bigger. A better analysis of the false positives will be added to this script if time allows.
+
+This detection problem is different to others
 
 ************************************************************************ 
 '''
