@@ -143,9 +143,10 @@ Take into account that the Total number of False Positives number is in absolute
 which means that if the classifier labels a few seconds incorrectly,
 if the predicted labels refer to small window sizes, the False positive number 
 will be big (even if the classifier works good). If the windows overlap, then the False Positives number
- will be even bigger. A better analysis of the false positives will be added to this script if time allows.
-
-This detection problem is different to others
+will be even bigger. Because we are approximating the detection problem with overlapping time intervals, there
+could be a True positive and a False positive at the same time for one fragment because one 
+human-labeled fragment could have several machine labeled fragments overlapping with it.
+A better analysis of the false positives will be added to this script if time allows.
 
 ************************************************************************ 
 '''
