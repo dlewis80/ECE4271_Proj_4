@@ -134,7 +134,7 @@ for k in classes_stats:
         print ("    TPR: does not exist. There is no fragment with this label in the file. Only false positives")
     print("")
 
-print("TPR(including all the classes): "+str(float(total_tp/total_n)))
+print("Accuracy: "+str(float(total_tp/total_n)))
 print("Total number of false positives(in absolute terms): "+str(total_fp))
 print ("")
 caut_message = '''
