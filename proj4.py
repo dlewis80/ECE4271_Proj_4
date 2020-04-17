@@ -1,11 +1,17 @@
 from pyAudioAnalysis import audioBasicIO
 from pyAudioAnalysis import MidTermFeatures
 import numpy as np
+import pickle
 from sklearn.svm import SVC
 
 #dictionary to store labels
 labels = {}
 features = {}
+
+#load features
+# pkl_file = open('learned_features.pkl', 'rb')
+# features = pickle.load(pkl_file)
+# pkl_file.close()
 
 #Process Audacity generated labelled file assumes files are names in format 5E6BA3C8_labelled.txt
 #Inputs : filePath, the path name to the audacity label file
@@ -52,9 +58,13 @@ def sound_type_lookup(window, audioLabels):
                 intersections.append(soundType)
     return intersections
 
-#Computes feature sets for audio file. 34 features are computed and compiled into matrix of dimension 34xN where N is
-#the number windows that fit in audio file. Then each column of features is assigned to a specific sound type and
-#placed in global feature dictionary
+#Computes feature sets for audio file. 34 features are computed they include: Zero Crossing Rate, Energy, Entropy of
+#Energy, Spectral Centroid, Spectral Spread, Spectral Entropy, Spectral Flux, Spectral Rolloff, MFCCs (9-21), Chroma
+#vector (22-33), and Chroma Deviation. In addition the deltas (difference between current and last feature vector) are
+#computed. These are the short term features (64 in total), the mid term features are the mean and variance statistics
+#of the short term features. Together they form 204 total features (64 short term, 64 mean, 64 variance)
+#These features are compiled into matrix of dimension 204xN where N is the number windows that fit in audio file.
+#Then each column of features is assigned to a specific sound type and placed in global feature dictionary.
 #Inputs: labelsDict: dictionary of labels
 #        audioFilePath: path to audio file
 #        windowSize: specifies size of window in seconds
@@ -79,6 +89,8 @@ def process_learning_features(labelsDict, audioFilePath, windowSize, windowStep)
         timeWindow[0] += windowStep
         timeWindow[1] += windowStep
 
+#This function converts a dictionary of features into a matrix to be used for training the SVM machine
+#Inputs: featuresDict: Dictionary of features where the keys are the name of the audio file processed and the values are
 def dict_to_training_matrix(featuresDict):
     classes = features.keys()
     count = 0
@@ -96,6 +108,11 @@ def dict_to_training_matrix(featuresDict):
         count += 1
     return matrix, np.transpose(np.asarray(classLabels))
 
+#Computes feature set for audio file to be classified
+#Inputs:  audioPath: Path to audio file to be classified
+#         windowSize: Size of window in seconds to compute features for
+#         windowStep: Step size of window, overlaps if less than windowSize
+#Outputs: F: Matrix of features for audio file
 def test_features(audioPath, windowSize, windowStep):
     [Fs, signal] = audioBasicIO.read_audio_file(audioPath)
     mF, sF, f_names = MidTermFeatures.mid_feature_extraction(signal, Fs, windowSize * Fs, windowStep * Fs, \
@@ -104,6 +121,12 @@ def test_features(audioPath, windowSize, windowStep):
     F = np.transpose(F)
     return F
 
+#Takes output of SVM classifier and converts it to equivalent format of audacity generated label files
+#Inputs:  y_pred: (vector) The output of the SVM classifier that assigns a class to each time window in audio file
+#         fileName: (string) Name of the file to write text to
+#         windowSize: Size of window in seconds to compute features for
+#         windowStep: Step size of window, overlaps if less than windowSize
+#Outputs: None
 def interpret_prediction(y_pred, fileName, windowSize, windowStep):
     file = open(fileName, 'w+')
     timeWindow = [0.0, windowSize]
@@ -113,27 +136,59 @@ def interpret_prediction(y_pred, fileName, windowSize, windowStep):
         timeWindow[0]+=windowStep
         timeWindow[1]+=windowStep
 
+#Takes output text file from interpret_prediction and condenses consecutive labels of the same class to a single time
+#stamp
+#Inputs:  filePath: path to file of un-condensed labels
+#         newFilePath: path for new file with condensed labels
+#Outputs: None
+def condense_labels(filePath, newFilePath):
+    file = open(newFilePath, 'w+')
+    with open(filePath, "r") as labelFile:
+        label = labelFile.readline()
+        labelData = label.split()
+        start = float(labelData[0])
+        end = float(labelData[1])
+        currentLabel = []
+        previousLabel = labelData[2]
+        label = labelFile.readline()
+        if not label:
+            file.write("%9.6f	%9.6f	%s\n" % (start, end, previousLabel))
+        while label:
+            labelData = label.split()
+            currentLabel = labelData[2]
+            if currentLabel == previousLabel:
+                end = float(labelData[1])
+            elif currentLabel != previousLabel:
+                file.write("%9.6f	%9.6f	%s\n" % (start, end, previousLabel))
+                start = float(labelData[0])
+                end = float(labelData[1])
+            previousLabel = currentLabel
+            label = labelFile.readline()
 
-process_label("/Users/omarwali/ece4271/project4/ECE4271_Proj_4/label_files/anderson/5E6BA3C8_labelled.txt")
-process_label("/Users/omarwali/ece4271/project4/ECE4271_Proj_4/label_files/anderson/5E6BA406_labelled.txt")
-process_label("/Users/omarwali/ece4271/project4/ECE4271_Proj_4/label_files/anderson/5E6BA444_labelled.txt")
-process_label("/Users/omarwali/ece4271/project4/ECE4271_Proj_4/label_files/anderson/5E6C7D44_labelled.txt")
-process_label("/Users/omarwali/ece4271/project4/ECE4271_Proj_4/label_files/anderson/5E6CB992_labelled.txt")
-process_label("/Users/omarwali/ece4271/project4/ECE4271_Proj_4/label_files/anderson/5E6BD3FA_labelled.txt")
-process_label("/Users/omarwali/ece4271/project4/ECE4271_Proj_4/label_files/anderson/5E6BD2C4_labelled.txt")
-process_learning_features(labels,"/Users/omarwali/ece4271/project4/ECE4271_Proj_4/Anderson-serviceberry-selected/5E6BA3C8.WAV", 0.25, 0.025)
-process_learning_features(labels,"/Users/omarwali/ece4271/project4/ECE4271_Proj_4/Anderson-serviceberry-selected/5E6BA406.WAV", 0.25, 0.025)
-process_learning_features(labels,"/Users/omarwali/ece4271/project4/ECE4271_Proj_4/Anderson-serviceberry-selected/5E6BA444.WAV", 0.25, 0.025)
-process_learning_features(labels,"/Users/omarwali/ece4271/project4/ECE4271_Proj_4/Anderson-serviceberry-selected/5E6C7D44.WAV", 0.25, 0.025)
-process_learning_features(labels,"/Users/omarwali/ece4271/project4/ECE4271_Proj_4/Anderson-serviceberry-selected/5E6CB992.WAV", 0.25, 0.025)
-process_learning_features(labels,"/Users/omarwali/ece4271/project4/ECE4271_Proj_4/Anderson-serviceberry-selected/5E6BD3FA.WAV", 0.25, 0.025)
-process_learning_features(labels,"/Users/omarwali/ece4271/project4/ECE4271_Proj_4/Anderson-serviceberry-selected/5E6BD2C4.WAV", 0.25, 0.025)
+process_label("/Users/omarwali/ece4271/project4/label_files/anderson/5E6BA3C8_labelled.txt")
+process_label("/Users/omarwali/ece4271/project4/label_files/anderson/5E6BA406_labelled.txt")
+process_label("/Users/omarwali/ece4271/project4/label_files/anderson/5E6BA444_labelled.txt")
+process_label("/Users/omarwali/ece4271/project4/label_files/anderson/5E6C7D44_labelled.txt")
+process_label("/Users/omarwali/ece4271/project4/label_files/anderson/5E6CB992_labelled.txt")
+process_label("/Users/omarwali/ece4271/project4/label_files/anderson/5E6BD3FA_labelled.txt")
+process_label("/Users/omarwali/ece4271/project4/label_files/anderson/5E6BD2C4_labelled.txt")
+process_learning_features(labels,"/Users/omarwali/ece4271/project4/Anderson-serviceberry-selected/5E6BA3C8.WAV", 0.25, 0.025)
+process_learning_features(labels,"/Users/omarwali/ece4271/project4/Anderson-serviceberry-selected/5E6BA406.WAV", 0.25, 0.025)
+process_learning_features(labels,"/Users/omarwali/ece4271/project4/Anderson-serviceberry-selected/5E6BA444.WAV", 0.25, 0.025)
+process_learning_features(labels,"/Users/omarwali/ece4271/project4/Anderson-serviceberry-selected/5E6C7D44.WAV", 0.25, 0.025)
+process_learning_features(labels,"/Users/omarwali/ece4271/project4/Anderson-serviceberry-selected/5E6CB992.WAV", 0.25, 0.025)
+process_learning_features(labels,"/Users/omarwali/ece4271/project4/Anderson-serviceberry-selected/5E6BD3FA.WAV", 0.25, 0.025)
+process_learning_features(labels,"/Users/omarwali/ece4271/project4/Anderson-serviceberry-selected/5E6BD2C4.WAV", 0.25, 0.025)
+
+output = open('learned_features.pkl', 'wb')
+pickle.dump(features, output)
+output.close()
 
 matrix, classLabels = dict_to_training_matrix(features)
 svclassifier = SVC(kernel='linear')
 svclassifier.fit(matrix, classLabels)
 
-x_test = test_features("/Users/omarwali/ece4271/project4/ECE4271_Proj_4/Anderson-serviceberry-selected/5E6BA482.WAV", 0.25, 0.025)
+x_test = test_features("/Users/omarwali/ece4271/project4/Anderson-serviceberry-selected/5E6BB8DA.WAV", 0.25, 0.025)
 y_pred = svclassifier.predict(x_test)
-interpret_prediction(y_pred,"5E6BA482_labelled.txt",0.25,0.025)
-print(y_pred)
+interpret_prediction(y_pred,"5E6BB8DA_labelled_UC.txt",0.25,0.025)
+condense_labels("5E6BB8DA_labelled_UC.txt", "5E6BB8DA_labelled.txt")
