@@ -59,7 +59,7 @@ for i in range(len(human_files)):
 classes_stats = {}
 human_times = []
 machine_times = []
-falsep_stats = {}
+
 
 for i in range(len(human_files)):
     human_times.clear()
