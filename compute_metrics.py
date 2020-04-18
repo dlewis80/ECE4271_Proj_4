@@ -13,7 +13,7 @@ called example.wav should have an example.txt file in the human-labeled
 directory and an example.txt file in the machine-labeled directory.
 The format of each file must be one line per labeled fragment with 
 the starting time and the ending time of the fragment in milliseconds
-and the label separated by \t character . For example:
+and the label separated by \t or the white space characters. For example:
     1290    8999    car
     12335   22098   talking
     45566   50003   noise
