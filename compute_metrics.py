@@ -60,6 +60,9 @@ classes_stats = {}
 human_times = []
 machine_times = []
 
+bird_tp = 0
+bird_fp = 0
+bird_cnt = 0
 
 for i in range(len(human_files)):
     human_times.clear()
@@ -67,10 +70,10 @@ for i in range(len(human_files)):
     with open(human_files[i]) as fh, open(machine_files[i]) as fm:
         for line in fh:
             tokens = line.split()
-            human_times.append([float(tokens[0]), float(tokens[1]), tokens[2].rstrip(), False])
+            human_times.append([float(tokens[0]), float(tokens[1]), tokens[2].rstrip(), False,False])
         for line in fm:
             tokens = line.split()
-            machine_times.append([float(tokens[0]), float(tokens[1]), tokens[2].rstrip(), False])
+            machine_times.append([float(tokens[0]), float(tokens[1]), tokens[2].rstrip(), False,False])
 
     for k in human_times:
         if (k[2] not in classes_stats.keys()):
@@ -88,14 +91,27 @@ for i in range(len(human_files)):
                     k[3] = True
                     l[3] = True
 
+            if k[2][0:4] == 'Bird' and l[2][0:4] == 'Bird':
+                k[4] = True
+                l[4] = True
+            if k[2][0:4] != 'Bird' and l[2][0:4] != 'Bird':
+                k[4] = True
+                l[4] = True
+            
+
     # Counting the number of overlapping files and stats
     for k in human_times:
         classes_stats[k[2]]["count"] = classes_stats[k[2]]["count"] + 1
+        bird_cnt = bird_cnt + 1
         if (k[3] == True):
             classes_stats[k[2]]["true_positives"] = classes_stats[k[2]]["true_positives"] + 1
+        if (k[4] == True):
+            bird_tp = bird_tp +1
     for l in machine_times:
         if (l[3] == False):
             classes_stats[l[2]]["false_positives"] = classes_stats[l[2]]["false_positives"] + 1
+        if (l[4] == False):
+            bird_fp = bird_fp +1
 
 total_n = 0
 total_tp = 0
@@ -120,6 +136,13 @@ for k in classes_stats:
 
 print("Accuracy: " + str(float(total_tp / total_n)))
 print("Total number of false positives(in absolute terms): " + str(total_fp))
+
+print("")
+print("Bird or no bird stats")
+print('Number of cases: '+str(bird_cnt))
+print('True positives: '+str(bird_tp))
+print('False positives: '+str(bird_fp))
+print('TPR: '+str(float(bird_tp/bird_cnt)))
 print("")
 caut_message = '''
 ************************************************************************
