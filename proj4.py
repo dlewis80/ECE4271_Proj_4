@@ -2,16 +2,27 @@ from pyAudioAnalysis import audioBasicIO
 from pyAudioAnalysis import MidTermFeatures
 import numpy as np
 import pickle
+import argparse
+from argparse import RawTextHelpFormatter
 from sklearn.svm import SVC
 
-#dictionary to store labels
+description = r'''
+This program classifies an audio file using a SVM.
+'''
+
+#dictionary to store labels and features
 labels = {}
 features = {}
 
 #load features
-# pkl_file = open('learned_features.pkl', 'rb')
-# features = pickle.load(pkl_file)
-# pkl_file.close()
+pkl_file = open('learned_features.pkl', 'rb')
+features = pickle.load(pkl_file)
+pkl_file.close()
+
+#load trained SVM machine
+pkl_file = open('trained_SVM.pkl', 'rb')
+svclassifier = pickle.load(pkl_file)
+pkl_file.close()
 
 #Process Audacity generated labelled file assumes files are names in format 5E6BA3C8_labelled.txt
 #Inputs : filePath, the path name to the audacity label file
@@ -165,30 +176,83 @@ def condense_labels(filePath, newFilePath):
             previousLabel = currentLabel
             label = labelFile.readline()
 
-process_label("/Users/omarwali/ece4271/project4/label_files/anderson/5E6BA3C8_labelled.txt")
-process_label("/Users/omarwali/ece4271/project4/label_files/anderson/5E6BA406_labelled.txt")
-process_label("/Users/omarwali/ece4271/project4/label_files/anderson/5E6BA444_labelled.txt")
-process_label("/Users/omarwali/ece4271/project4/label_files/anderson/5E6C7D44_labelled.txt")
-process_label("/Users/omarwali/ece4271/project4/label_files/anderson/5E6CB992_labelled.txt")
-process_label("/Users/omarwali/ece4271/project4/label_files/anderson/5E6BD3FA_labelled.txt")
-process_label("/Users/omarwali/ece4271/project4/label_files/anderson/5E6BD2C4_labelled.txt")
-process_learning_features(labels,"/Users/omarwali/ece4271/project4/Anderson-serviceberry-selected/5E6BA3C8.WAV", 0.25, 0.025)
-process_learning_features(labels,"/Users/omarwali/ece4271/project4/Anderson-serviceberry-selected/5E6BA406.WAV", 0.25, 0.025)
-process_learning_features(labels,"/Users/omarwali/ece4271/project4/Anderson-serviceberry-selected/5E6BA444.WAV", 0.25, 0.025)
-process_learning_features(labels,"/Users/omarwali/ece4271/project4/Anderson-serviceberry-selected/5E6C7D44.WAV", 0.25, 0.025)
-process_learning_features(labels,"/Users/omarwali/ece4271/project4/Anderson-serviceberry-selected/5E6CB992.WAV", 0.25, 0.025)
-process_learning_features(labels,"/Users/omarwali/ece4271/project4/Anderson-serviceberry-selected/5E6BD3FA.WAV", 0.25, 0.025)
-process_learning_features(labels,"/Users/omarwali/ece4271/project4/Anderson-serviceberry-selected/5E6BD2C4.WAV", 0.25, 0.025)
+# #Anderson Files
+# process_label("/Users/omarwali/ece4271/project4/label_files/anderson/5E6BA3C8_labelled.txt")
+# process_label("/Users/omarwali/ece4271/project4/label_files/anderson/5E6BA406_labelled.txt")
+# process_label("/Users/omarwali/ece4271/project4/label_files/anderson/5E6BA444_labelled.txt")
+# process_label("/Users/omarwali/ece4271/project4/label_files/anderson/5E6C7D44_labelled.txt")
+# process_label("/Users/omarwali/ece4271/project4/label_files/anderson/5E6CB992_labelled.txt")
+# process_label("/Users/omarwali/ece4271/project4/label_files/anderson/5E6BD3FA_labelled.txt")
+# process_label("/Users/omarwali/ece4271/project4/label_files/anderson/5E6BD2C4_labelled.txt")
+# process_learning_features(labels,"/Users/omarwali/ece4271/project4/Anderson-serviceberry-selected/5E6BA3C8.WAV", 0.25, 0.025)
+# process_learning_features(labels,"/Users/omarwali/ece4271/project4/Anderson-serviceberry-selected/5E6BA406.WAV", 0.25, 0.025)
+# process_learning_features(labels,"/Users/omarwali/ece4271/project4/Anderson-serviceberry-selected/5E6BA444.WAV", 0.25, 0.025)
+# process_learning_features(labels,"/Users/omarwali/ece4271/project4/Anderson-serviceberry-selected/5E6C7D44.WAV", 0.25, 0.025)
+# process_learning_features(labels,"/Users/omarwali/ece4271/project4/Anderson-serviceberry-selected/5E6CB992.WAV", 0.25, 0.025)
+# process_learning_features(labels,"/Users/omarwali/ece4271/project4/Anderson-serviceberry-selected/5E6BD3FA.WAV", 0.25, 0.025)
+# process_learning_features(labels,"/Users/omarwali/ece4271/project4/Anderson-serviceberry-selected/5E6BD2C4.WAV", 0.25, 0.025)
+# #CherryEmerson Files
+# process_label("/Users/omarwali/ece4271/project4/label_files/cherry_emerson/5E635A43_labelled.txt")
+# process_label("/Users/omarwali/ece4271/project4/label_files/cherry_emerson/5E635B3B_labelled.txt")
+# process_label("/Users/omarwali/ece4271/project4/label_files/cherry_emerson/5E635FD5_labelled.txt")
+# process_label("/Users/omarwali/ece4271/project4/label_files/cherry_emerson/5E636E5D_labelled.txt")
+# process_label("/Users/omarwali/ece4271/project4/label_files/cherry_emerson/5E638A75_labelled.txt")
+# process_learning_features(labels,"/Users/omarwali/ece4271/project4/CherryEmerson-selected/5E635A43.WAV", 0.25, 0.025)
+# process_learning_features(labels,"/Users/omarwali/ece4271/project4/CherryEmerson-selected/5E635B3B.WAV", 0.25, 0.025)
+# process_learning_features(labels,"/Users/omarwali/ece4271/project4/CherryEmerson-selected/5E635FD5.WAV", 0.25, 0.025)
+# process_learning_features(labels,"/Users/omarwali/ece4271/project4/CherryEmerson-selected/5E636E5D.WAV", 0.25, 0.025)
+# process_learning_features(labels,"/Users/omarwali/ece4271/project4/CherryEmerson-selected/5E638A75.WAV", 0.25, 0.025)
+# #EBB Files
+# process_label("/Users/omarwali/ece4271/project4/label_files/ebb/5E63D4B9_labelled.txt")
+# process_label("/Users/omarwali/ece4271/project4/label_files/ebb/5E63D5EF_labelled.txt")
+# process_label("/Users/omarwali/ece4271/project4/label_files/ebb/5E63D6E7_labelled.txt")
+# process_label("/Users/omarwali/ece4271/project4/label_files/ebb/5E63D7A1_labelled.txt")
+# process_label("/Users/omarwali/ece4271/project4/label_files/ebb/5E63D7DF_labelled.txt")
+# process_learning_features(labels,"/Users/omarwali/ece4271/project4/EBB-selected/5E63D4B9.WAV", 0.25, 0.025)
+# process_learning_features(labels,"/Users/omarwali/ece4271/project4/EBB-selected/5E63D5EF.WAV", 0.25, 0.025)
+# process_learning_features(labels,"/Users/omarwali/ece4271/project4/EBB-selected/5E63D6E7.WAV", 0.25, 0.025)
+# process_learning_features(labels,"/Users/omarwali/ece4271/project4/EBB-selected/5E63D7A1.WAV", 0.25, 0.025)
+# process_learning_features(labels,"/Users/omarwali/ece4271/project4/EBB-selected/5E63D7DF.WAV", 0.25, 0.025)
+# #Architecture Files
+# process_label("/Users/omarwali/ece4271/project4/label_files/architecture/5E678967_labelled.txt")
+# process_label("/Users/omarwali/ece4271/project4/label_files/architecture/5E679209_labelled.txt")
+# process_label("/Users/omarwali/ece4271/project4/label_files/architecture/5E679515_labelled.txt")
+# process_label("/Users/omarwali/ece4271/project4/label_files/architecture/5E679597_labelled.txt")
+# process_label("/Users/omarwali/ece4271/project4/label_files/architecture/5E679821_labelled.txt")
+# process_learning_features(labels,"/Users/omarwali/ece4271/project4/ArchitectureWest-selected/5E678967.WAV", 0.25, 0.025)
+# process_learning_features(labels,"/Users/omarwali/ece4271/project4/ArchitectureWest-selected/5E679209.WAV", 0.25, 0.025)
+# process_learning_features(labels,"/Users/omarwali/ece4271/project4/ArchitectureWest-selected/5E679515.WAV", 0.25, 0.025)
+# process_learning_features(labels,"/Users/omarwali/ece4271/project4/ArchitectureWest-selected/5E679597.WAV", 0.25, 0.025)
+# process_learning_features(labels,"/Users/omarwali/ece4271/project4/ArchitectureWest-selected/5E679821.WAV", 0.25, 0.025)
+#
+# #Save Features
+# output = open('learned_features.pkl', 'wb')
+# pickle.dump(features, output)
+# output.close()
+#
+# #Train SVM
+# matrix, classLabels = dict_to_training_matrix(features)
+# svclassifier = SVC(kernel='linear')
+# svclassifier.fit(matrix, classLabels)
+#
+# #Save trained SVM
+# out = open('trained_SVM.pkl', 'wb')
+# pickle.dump(svclassifier, out)
+# out.close()
 
-output = open('learned_features.pkl', 'wb')
-pickle.dump(features, output)
-output.close()
+#Parse File Path from terminal
+parser = argparse.ArgumentParser(description=description, formatter_class=RawTextHelpFormatter)
+parser.add_argument('audioFilePath', metavar='audioFilePath', \
+                    type=str, help="Path to audio file to be classified")
+args = parser.parse_args()
+audioFilePath = args.audioFilePath
 
-matrix, classLabels = dict_to_training_matrix(features)
-svclassifier = SVC(kernel='linear')
-svclassifier.fit(matrix, classLabels)
+#Get Audio Name
+audioName = audioFilePath[-12:]
+audioName = audioName.split(".")[0]
 
-x_test = test_features("/Users/omarwali/ece4271/project4/Anderson-serviceberry-selected/5E6BB8DA.WAV", 0.25, 0.025)
+#Classifies audio using SVM
+x_test = test_features(audioFilePath, 0.25, 0.025)
 y_pred = svclassifier.predict(x_test)
-interpret_prediction(y_pred,"5E6BB8DA_labelled_UC.txt",0.25,0.025)
-condense_labels("5E6BB8DA_labelled_UC.txt", "5E6BB8DA_labelled.txt")
+interpret_prediction(y_pred,"uncompressed_labels/" + audioName + "_labelled_UC.txt",0.25,0.025)
+condense_labels("uncompressed_labels/" + audioName + "_labelled_UC.txt", "machine_labels/" + audioName + "_labelled.txt")
