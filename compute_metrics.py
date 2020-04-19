@@ -61,8 +61,11 @@ human_times = []
 machine_times = []
 
 bird_tp = 0
+no_bird_tp = 0
 bird_fp = 0
+no_bird_fp = 0
 bird_cnt = 0
+no_bird_cnt = 0
 
 for i in range(len(human_files)):
     human_times.clear()
@@ -102,16 +105,27 @@ for i in range(len(human_files)):
     # Counting the number of overlapping files and stats
     for k in human_times:
         classes_stats[k[2]]["count"] = classes_stats[k[2]]["count"] + 1
-        bird_cnt = bird_cnt + 1
+        if (k[2][0:4] == 'Bird'):
+            bird_cnt = bird_cnt +1
+        else:
+            no_bird_cnt = no_bird_cnt +1
+
         if (k[3] == True):
             classes_stats[k[2]]["true_positives"] = classes_stats[k[2]]["true_positives"] + 1
         if (k[4] == True):
-            bird_tp = bird_tp +1
+            if (k[2][0:4] == 'Bird'):
+                bird_tp = bird_tp +1
+            else:
+                no_bird_tp = no_bird_tp +1
+
     for l in machine_times:
         if (l[3] == False):
             classes_stats[l[2]]["false_positives"] = classes_stats[l[2]]["false_positives"] + 1
         if (l[4] == False):
-            bird_fp = bird_fp +1
+            if(l[2][0:4] == 'Bird'):
+                bird_fp = bird_fp +1
+            else:
+                no_bird_fp = no_bird_fp +1
 
 total_n = 0
 total_tp = 0
@@ -137,12 +151,22 @@ for k in classes_stats:
 print("Accuracy: " + str(float(total_tp / total_n)))
 print("Total number of false positives(in absolute terms): " + str(total_fp))
 
-print("")
-print("Bird or no bird stats:")
-print('Number of cases: '+str(bird_cnt))
-print('Correctly detected fragments: '+str(bird_tp))
-print('False positives: '+str(bird_fp))
-print('Accuracy: '+str(float(bird_tp/bird_cnt)))
+print("\n")
+print("Bird or no bird stats(dividing all classes into two classes: \"Bird\" or \"No Bird\"):")
+print ("")
+print("Class: Bird")
+print("    Number of cases: "+str(bird_cnt))
+print("    True positives: "+str(bird_tp))
+print("    False positves: "+str(bird_fp))
+print("Class: No bird")
+print("    Number of cases: "+str(no_bird_cnt))
+print("    True positives: "+str(no_bird_tp))
+print("    False positves: "+str(no_bird_fp))
+print("\n")
+print('Number of cases: '+str(bird_cnt+no_bird_cnt))
+print('Correctly detected fragments: '+str(bird_tp+no_bird_tp))
+print('False positives: '+str(bird_fp+no_bird_fp))
+print('Accuracy: '+str(float((bird_tp+no_bird_tp)/(bird_cnt+no_bird_cnt))))
 print("")
 caut_message = '''
 ************************************************************************
