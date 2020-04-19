@@ -138,11 +138,11 @@ print("Accuracy: " + str(float(total_tp / total_n)))
 print("Total number of false positives(in absolute terms): " + str(total_fp))
 
 print("")
-print("Bird or no bird stats")
+print("Bird or no bird stats:")
 print('Number of cases: '+str(bird_cnt))
-print('True positives: '+str(bird_tp))
+print('Correctly detected fragments: '+str(bird_tp))
 print('False positives: '+str(bird_fp))
-print('TPR: '+str(float(bird_tp/bird_cnt)))
+print('Accuracy: '+str(float(bird_tp/bird_cnt)))
 print("")
 caut_message = '''
 ************************************************************************
