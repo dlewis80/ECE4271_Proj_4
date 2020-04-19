@@ -85,18 +85,18 @@ for i in range(len(human_files)):
 
     for k in human_times:
         for l in machine_times:
-            if k[2] == l[2]:
-                # Checking if two fragments with the same label overlap
-                if (k[0] <= l[1] and k[1] >= l[0]):
-                    k[3] = True
-                    l[3] = True
+            # Checking if two fragments with the same label overlap
+            if (k[0] <= l[1] and k[1] >= l[0]):
+                if k[2] == l[2]:
+                        k[3] = True
+                        l[3] = True
 
-            if k[2][0:4] == 'Bird' and l[2][0:4] == 'Bird':
-                k[4] = True
-                l[4] = True
-            if k[2][0:4] != 'Bird' and l[2][0:4] != 'Bird':
-                k[4] = True
-                l[4] = True
+                if k[2][0:4] == 'Bird' and l[2][0:4] == 'Bird':
+                    k[4] = True
+                    l[4] = True
+                if k[2][0:4] != 'Bird' and l[2][0:4] != 'Bird':
+                    k[4] = True
+                    l[4] = True
             
 
     # Counting the number of overlapping files and stats
